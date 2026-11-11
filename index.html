@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yusuke Iwasaki</title>
+<meta name="description" content="Yusuke Iwasaki — PjM / PdM / PMO.">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#f7f6f2">
+<link rel="stylesheet" href="/core/core.css?v=14">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+<script>
+  // 描画前に言語を決めておく（ちらつき防止）
+  try { if (localStorage.getItem('fuzake-box-lang') === 'ja') document.documentElement.lang = 'ja'; } catch (e) {}
+</script>
+<style>
+  /* 中身が揃うまで隠す（言語や箱の状態が切り替わる瞬間を見せない） */
+  body.booting main { visibility: hidden; }
+
+  body { background: #12101a; }
+  main { overflow-x: hidden; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+
+  /* ===== 1. 真面目ゾーン ===== */
+  .serious { background: #f7f6f2; color: #1f2430; font-family: 'Inter', 'Noto Sans JP', system-ui, sans-serif; padding: 96px 0 56px; }
+  .serious .eyebrow { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #6b7280; font-weight: 600; }
+  .serious .who { font-size: clamp(34px, 7vw, 52px); font-weight: 700; letter-spacing: -.02em; color: #14213d; margin: 10px 0 6px; line-height: 1.1; }
+  .serious .role { font-size: 16px; font-weight: 600; color: #3b4252; }
+  .serious .summary { color: #3b4252; line-height: 1.85; font-size: 15.5px; margin: 22px 0 0; }
+  .serious .links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px; }
+  .serious .links a { text-decoration: none; color: #14213d; font-weight: 600; font-size: 14px; padding: 9px 18px;
+                      border: 1px solid #14213d; border-radius: 6px; transition: background .15s, color .15s; }
+  .serious .links a:hover { background: #14213d; color: #fff; }
+  .serious h2 { font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: #6b7280; font-weight: 600;
+                margin: 56px 0 18px; padding-bottom: 10px; border-bottom: 1px solid #dedad2; }
+  .career { list-style: none; margin: 0; padding: 0; }
+  .career li { display: grid; grid-template-columns: 150px 1fr; gap: 4px 20px; padding: 14px 0; border-bottom: 1px solid #ebe8e1; }
+  .career .when { color: #6b7280; font-size: 13.5px; font-variant-numeric: tabular-nums; padding-top: 2px; }
+  .career .what { font-weight: 600; color: #14213d; font-size: 15px; }
+  .career .detail { grid-column: 2; color: #4b5260; font-size: 14px; line-height: 1.7; }
+
+  /* ===== 2. だんだん崩れるゾーン ===== */
+  .interlude { background: linear-gradient(#f7f6f2 0%, #e9e3f2 24%, #6a5f8a 50%, #12101a 92%); padding: 40px 0 120px; text-align: center; }
+  .interlude p { margin: 0 auto 38px; }
+  .il1 { font-family: 'Inter', 'Noto Sans JP', sans-serif; color: #3b4252; font-size: 15px; }
+  .il2 { font-family: 'Inter', 'Noto Sans JP', sans-serif; color: #4b3f6b; font-size: 17px; letter-spacing: .06em; transform: rotate(-.6deg); }
+  .il3 { font-family: 'DotGothic16', monospace; color: #efe9ff; font-size: 26px; transform: rotate(2.5deg); }
+  .sound-note { font-family: 'Inter', 'Noto Sans JP', sans-serif; color: #efe9ffcc; font-size: 13px; margin-top: -18px !important; }
+  .il4 { font-family: 'DotGothic16', monospace; color: #ffe066; font-size: clamp(26px, 6vw, 40px); line-height: 1.35;
+         text-shadow: 3px 3px 0 #ff4d6d; animation: wob 2.2s ease-in-out infinite; max-width: 640px; padding: 0 16px; }
+  @keyframes wob { 0%, 100% { transform: rotate(-2deg) scale(1); } 50% { transform: rotate(2deg) scale(1.04); } }
+
+  /* ===== 3. 無駄ゾーン ===== */
+  .fun { background: #12101a; color: var(--fg); padding: 10px 0 60px; }
+  .gift-wrap { text-align: center; }
+  .giftbox { position: relative; width: 150px; height: 150px; border: none; background: none; cursor: pointer; margin-top: 10px; }
+  .giftbox:not(.open) { animation: idle 2.4s infinite; }
+  .giftbox .box { position: absolute; left: 15px; right: 15px; bottom: 0; height: 90px; background: var(--accent); border-radius: 6px; }
+  .giftbox .lid { position: absolute; left: 5px; right: 5px; top: 32px; height: 30px; background: #ff7a93; border-radius: 6px;
+                  z-index: 2; transition: transform .55s cubic-bezier(.3, 1.6, .5, 1); }
+  .giftbox .ribbon { position: absolute; left: 66px; width: 18px; top: 32px; bottom: 0; background: #ffe066; z-index: 3; transition: opacity .3s; }
+  .giftbox .label { position: absolute; left: 0; right: 0; bottom: 26px; z-index: 4; color: #1b1030; font-size: 18px;
+                    background: #ffe066; width: max-content; padding: 0 8px; margin: auto; border-radius: 6px; }
+  .giftbox.open .lid { transform: translate(46px, -70px) rotate(32deg); }
+  .giftbox.open .ribbon { opacity: 0; }
+  @keyframes idle { 0%, 80%, 100% { rotate: 0deg; } 85% { rotate: -6deg; } 90% { rotate: 6deg; } 95% { rotate: -3deg; } }
+  .gift-hint { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+
+  #gift { overflow: hidden; transition: opacity .35s, transform .35s; }
+  #gift.shut { opacity: 0; transform: translateY(-16px) scale(.97); pointer-events: none; }
+  h1.boxname { font-family: 'DotGothic16', monospace; font-size: clamp(36px, 9vw, 60px); margin: 40px 0 0; line-height: 1;
+               color: #ffe066; text-shadow: 4px 4px 0 var(--accent); transform: rotate(-2deg); }
+  h1.boxname { scroll-margin-top: 24px; }
+  .intent { color: var(--muted); font-size: 11.5px; line-height: 1.6; margin: 14px 0 0; opacity: .8; }
+  .tag { color: var(--muted); margin: 10px 0 28px; line-height: 1.7; }
+  .fun h2 { font-family: 'DotGothic16', monospace; font-size: 22px; margin: 36px 0 14px; }
+  .fun h2 small { color: var(--muted); font-size: 14px; margin-left: 8px; }
+
+  /* アプリ一覧：6個ずつのページ。ボタン・点・スワイプでめくる */
+  .apps-viewport { overflow: hidden; touch-action: pan-y; }
+  .apps-track { display: flex; transition: transform .35s ease; }
+  .app-page { flex: 0 0 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-content: start; }
+  .pager { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; }
+  .pager button { font: inherit; color: var(--fg); background: none; border: 2px solid #3a3450; border-radius: 999px; cursor: pointer; }
+  .pager-prev, .pager-next { width: 40px; height: 40px; font-size: 22px !important; line-height: 1; }
+  .pager button:disabled { opacity: .3; cursor: default; }
+  .pager-dots { display: flex; gap: 8px; }
+  .pager-dots button { width: 12px; height: 12px; padding: 0; background: #3a3450; border: none; }
+  .pager-dots button[aria-current="true"] { background: #ffe066; }
+  .pager-count { font-family: 'DotGothic16', monospace; color: var(--muted); font-size: 13px; min-width: 3.2em; }
+  @media (max-width: 560px) {
+    .app-page { grid-template-columns: repeat(2, 1fr); gap: 10px; }   /* スマホは2列×3段 */
+    .app { padding: 12px; }
+    .app .emo { font-size: 32px; }
+    .app .t { font-size: 16px; }
+    .app .d { font-size: 12.5px; }
+  }
+  .app { display: block; text-decoration: none; background: var(--card); border-radius: 16px; padding: 16px;
+         border: 3px solid transparent; transition: transform .15s; }
+  .app:hover { transform: rotate(-1.5deg) scale(1.03); border-color: var(--c); }
+  .app .emo { font-size: 40px; }
+  .app .t { font-weight: 800; font-size: 19px; margin-top: 6px; color: var(--c); }
+  .app .d { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+  .groove { background: var(--card); border-radius: 16px; padding: 16px; position: relative; overflow: hidden; isolation: isolate;
+            --pulse: 0; --gc: #ffe066; }
+  .groove > :not(.fx) { position: relative; z-index: 1; }
+
+  /* ===== 再生中の演出 =====
+     てんかんへの配慮：
+     - 光の強弱は毎秒2回まで（速いテンポは2・4・16拍に1回にまとめる）。パッと点滅させず、ふわっと立ち上がって消える
+     - 光るのはこの枠の中だけ。明るさの変化も小さく
+     - OSの「視差効果を減らす」がオンなら最初からOFF。ボタンでいつでも切れる */
+  .fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .6s; }
+  .groove.lit .fx { opacity: 1; }
+  .fx-glow { position: absolute; inset: 0;
+             background: radial-gradient(120% 90% at 50% 110%, var(--gc), transparent 60%);
+             opacity: calc(.05 + var(--pulse) * .17); }
+  .fx-beams { position: absolute; left: 50%; top: 115%; width: 260%; aspect-ratio: 1; translate: -50% -50%; opacity: .1;
+              background: repeating-conic-gradient(from 0deg, var(--gc) 0 4deg, transparent 4deg 30deg);
+              animation: beams 14s linear infinite; }
+  @keyframes beams { to { rotate: 360deg; } }
+  .groove.lit .trk.on { transform: scale(calc(1 + var(--pulse) * .025)); box-shadow: 0 0 calc(10px + var(--pulse) * 14px) #ffe06655; }
+
+  /* パチスロっぽいランプ（光るたびに1つずつ進む） */
+  .lamps { display: flex; gap: 7px; justify-content: center; margin: 14px 0 0; height: 10px; }
+  .groove .tracks { margin-top: 6px; }
+  .lamps i { width: 10px; height: 10px; border-radius: 50%; background: #3a3450; transition: background .25s, box-shadow .25s; }
+  .groove.lit .lamps i.on { background: var(--gc); box-shadow: 0 0 8px var(--gc); }
+  .groove.fever .lamps i { background: hsl(calc(var(--i) * 40deg) 85% 62%); box-shadow: 0 0 6px hsl(calc(var(--i) * 40deg) 85% 62%); }
+
+  /* ときどき来る「確定」演出：枠がゆっくり虹色に回る＋文字がふわっと出る */
+  .groove::after { content: ''; position: absolute; inset: 0; border-radius: 16px; padding: 3px; z-index: 2; pointer-events: none;
+                   background: conic-gradient(from var(--rot, 0deg), #ff8fa3, #ffe066, #8ce99a, #74c0fc, #b197fc, #ff8fa3);
+                   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+                   -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0; transition: opacity .8s; }
+  .groove.fever::after { opacity: .9; animation: rot 3s linear infinite; }
+  /* FEVER中は背景も虹色。色はゆっくり流れるだけで、明滅はさせない */
+  .fx-rainbow { position: absolute; inset: 0; opacity: 0; transition: opacity 1s;
+                background: linear-gradient(120deg, #ff8fa3, #ffe066, #8ce99a, #74c0fc, #b197fc, #ff8fa3, #ffe066);
+                background-size: 300% 300%; animation: rainbow 9s linear infinite; }
+  .groove.fever .fx-rainbow { opacity: .26; }
+  @keyframes rainbow { to { background-position: 300% 0; } }
+  @property --rot { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+  @keyframes rot { to { --rot: 360deg; } }
+  .kakutei { height: 22px; margin-top: 4px; text-align: center; font: 18px/22px 'DotGothic16', monospace; pointer-events: none;
+             background: linear-gradient(90deg, #ff8fa3, #ffe066, #8ce99a, #74c0fc, #b197fc); -webkit-background-clip: text; background-clip: text;
+             color: transparent; opacity: 0; transform: translateY(6px); transition: opacity .6s, transform .6s; }
+  .groove.fever .kakutei { opacity: 1; transform: none; }
+  .btn.fxbtn { font-size: 14px; border-width: 2px; padding: 7px 12px; color: var(--muted); border-color: #3a3450; }
+  .btn.fxbtn[aria-pressed="true"] { color: var(--fg); border-color: var(--gc); }
+  .tempos { display: flex; gap: 6px; margin-bottom: 14px; background: #15121f; padding: 5px; border-radius: 12px; }
+  .tempo { flex: 1; font: inherit; color: var(--muted); background: none; border: none; border-radius: 9px; padding: 8px 4px;
+           cursor: pointer; line-height: 1.2; }
+  .tempo b { display: block; font-family: 'DotGothic16', monospace; font-size: 22px; font-weight: 400; }
+  .tempo span, .tempo em { display: block; font-size: 11px; font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tempo em { opacity: .75; }
+  .tempo[aria-selected="true"] { background: var(--tc); color: #1b1030; }
+  .tempo:not([aria-selected="true"]):hover { color: var(--fg); }
+  .tempo:disabled { cursor: wait; }
+  .tracks { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-top: 14px; }
+  /* おすすめは1行に並べ、はみ出した分は横にスクロール（一覧が縦に伸びないように） */
+  .presets { display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; align-items: center; margin-top: 14px; padding-bottom: 6px;
+             scrollbar-width: thin; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+  .presets .lbl { font-size: 13px; color: var(--muted); flex: none; position: sticky; left: 0; background: var(--card); padding-right: 4px; z-index: 1; }
+  .preset { flex: none; white-space: nowrap; font: inherit; font-size: 13px; text-align: left; line-height: 1.25; border-radius: 10px; padding: 7px 11px; cursor: pointer;
+            border: 2px solid #3a3450; background: #15121f; color: var(--fg); }
+  .preset .preset-sub { display: block; font-size: 11px; color: var(--muted); }
+  .preset[aria-pressed="true"] { border-color: var(--gc); background: #2b2410; }
+  .preset:disabled { cursor: not-allowed; opacity: .5; }
+  .selbar { display: flex; gap: 10px; align-items: baseline; margin-top: 10px; min-height: 1.4em; }
+  #oncount { font-family: 'DotGothic16', monospace; color: var(--gc); }
+  #oncount.full { animation: nope .3s; }
+  @keyframes nope { 25% { translate: -4px 0; } 75% { translate: 4px 0; } }
+  #groovemsg { font-size: 13px; color: #ff8fa3; }
+  .trk { border-radius: 12px; padding: 10px 12px; border: 3px solid #3a3450; background: #15121f; text-align: left;
+         color: var(--fg); font: inherit; font-size: 14px; cursor: pointer; min-height: 58px; }
+  .trk .n { font-weight: 800; }
+  .trk .h { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .trk.on { border-color: #ffe066; background: #2b2410; box-shadow: 0 0 18px #ffe06655; }
+  .trk.locked { cursor: not-allowed; opacity: .55; }
+  .trk.on .n::after { content: ' ♪'; }
+  .btn { font: inherit; font-weight: 800; border: 3px solid var(--fg); background: none; color: var(--fg);
+         padding: 8px 16px; border-radius: 10px; cursor: pointer; }
+  .btn.big { background: #ffe066; color: #1b1030; border-color: #ffe066; }
+  .btn.cheat { border-style: dashed; border-color: var(--muted); color: var(--muted); font-size: 14px; }
+  .btn.cheat:hover { color: #ff4d6d; border-color: #ff4d6d; }
+  .btn.danger { color: #ff4d6d; border-color: #ff4d6d; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .count { color: var(--muted); font-family: 'DotGothic16', monospace; }
+  .note { color: var(--muted); font-size: 13px; }
+
+  details { background: var(--card); border-radius: 16px; padding: 14px 18px; }
+  summary { cursor: pointer; font-weight: 800; }
+  textarea { width: 100%; height: 70px; margin: 10px 0; background: #0c0a12; color: var(--fg); border: 2px solid #3a3450;
+             border-radius: 8px; padding: 8px; font-family: monospace; font-size: 12px; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 50px; text-align: center; font-family: 'DotGothic16', monospace; }
+
+  /* 言語切り替え：上の真面目ゾーンに合わせた落ち着いた見た目 */
+  body > .fz-lang { background: #ffffffee; border: 1px solid #dedad2; color: #9ca3af; font-family: 'Inter', sans-serif; font-size: 13px; }
+  body > .fz-lang .on { color: #14213d; font-weight: 700; }
+
+  /* スマホ */
+  @media (max-width: 560px) {
+    .serious { padding-top: 76px; }
+    .career li { grid-template-columns: 1fr; }
+    .career .detail { grid-column: 1; }
+    .interlude { padding-bottom: 90px; }
+    .giftbox .lid { }
+  }
+</style>
+</head>
+<body class="booting">
+<main>
+  <!-- ===== 1. 真面目ゾーン（中身は /data/profile.json） ===== -->
+  <section class="serious">
+    <div class="wrap">
+      <div class="eyebrow" data-i18n="eyebrow"></div>
+      <div class="who" id="pname"></div>
+      <div class="role" id="prole"></div>
+      <p class="summary" id="psummary"></p>
+      <div class="links" id="plinks"></div>
+
+      <h2 data-i18n="career"></h2>
+      <ol class="career" id="pcareer"></ol>
+    </div>
+  </section>
+
+  <!-- ===== 2. だんだん崩れる ===== -->
+  <section class="interlude">
+    <div class="wrap">
+      <p class="il1" data-i18n="il1"></p>
+      <p class="il2" data-i18n="il2"></p>
+      <p class="il3" data-i18n="il3"></p>
+      <p class="il4" data-i18n-html="il4"></p>
+      <p class="sound-note" data-i18n="soundNote"></p>
+    </div>
+  </section>
+
+  <!-- ===== 3. 無駄 ===== -->
+  <section class="fun">
+    <div class="wrap">
+      <div class="gift-wrap">
+        <button class="giftbox" id="giftbox">
+          <span class="lid"></span><span class="box"></span><span class="ribbon"></span>
+          <span class="label pixel" data-i18n="giftLabel"></span>
+        </button>
+        <p class="gift-hint" id="gifthint"></p>
+      </div>
+
+      <div id="gift">
+        <h1 class="boxname" data-i18n-html="boxName"></h1>
+        <p class="intent" data-i18n="intent"></p>
+        <p class="tag" data-i18n-html="tagline"></p>
+
+        <h2><span data-i18n="apps"></span></h2>
+        <div class="apps-pager" id="apps">
+          <div class="apps-viewport"><div class="apps-track" id="appstrack"></div></div>
+          <div class="pager">
+            <button class="pager-prev" aria-label="previous">‹</button>
+            <div class="pager-dots"></div>
+            <span class="pager-count"></span>
+            <button class="pager-next" aria-label="next">›</button>
+          </div>
+        </div>
+
+        <h2><span data-i18n="groove"></span> <small id="count" class="count"></small></h2>
+        <div class="groove" id="groove">
+          <div class="fx" aria-hidden="true"><div class="fx-rainbow"></div><div class="fx-glow"></div><div class="fx-beams"></div></div>
+          <div class="tempos" id="tempos" role="tablist"></div>
+          <div class="row">
+            <button class="btn big" id="play"></button>
+            <button class="btn fxbtn" id="fxbtn"></button>
+            <button class="btn cheat" id="cheat"></button>
+          </div>
+          <div class="lamps" id="lamps" aria-hidden="true"></div>
+          <div class="kakutei" id="kakutei" aria-hidden="true"></div>
+          <div class="presets" id="presets"></div>
+          <div class="selbar"><span id="oncount"></span><span id="groovemsg" aria-live="polite"></span></div>
+          <div class="tracks" id="tracks"></div>
+        </div>
+
+        <h2><span data-i18n="save"></span> <small data-i18n="saveSub"></small></h2>
+        <details>
+          <summary data-i18n="saveSummary"></summary>
+          <p class="note" data-i18n="saveNote"></p>
+          <div class="row">
+            <button class="btn" id="exp" data-i18n="exp"></button>
+            <button class="btn" id="imp" data-i18n="imp"></button>
+            <button class="btn" id="rst" data-i18n="rst"></button>
+          </div>
+          <textarea id="code"></textarea>
+          <div class="note" id="msg"></div>
+        </details>
+      </div>
+
+      <footer data-i18n="footer"></footer>
+    </div>
+  </section>
+</main>
+
+<script src="/core/core.js?v=14"></script>
+<script>
+const T = {
+  en: {
+    eyebrow: 'Profile', career: 'Career',
+    il1: 'That concludes the professional part.',
+    il2: 'Thank you very much for your time.',
+    il3: 'And now,',
+    il4: 'as thanks for visiting,<br>please accept this assortment of uselessness.',
+    soundNote: '※ This plays sound',
+    giftLabel: 'USELESS',
+    hintClosed: 'Tap to open (no returns)', hintOpen: 'Congratulations. It is an assortment of uselessness. Tap again to close.',
+    hintReclosed: 'The assortment of uselessness has been carefully stored.',
+    giftAriaOpen: 'Open the assortment of uselessness', giftAriaClose: 'Close the assortment',
+    boxName: 'The Useless Corner',
+    intent: 'I made this because I think people are happiest when they have room for useless things.',
+    tagline: 'Play them to collect sounds, which slowly turn into a groove.',
+    apps: 'Games',
+    groove: 'Groove Machine', sounds: 'sounds',
+    play: '▶ Play', stop: '■ Stop', loading: '…loading', noSounds: 'No sounds yet. Play the apps (or cheat).',
+    fxOn: '✨ Lights: on', fxOff: '✨ Lights: off', fxTitle: 'Gentle lights synced to the beat (at most 2 pulses per second)', kakutei: '★ FEVER ★',
+    cheat: '🔓 Unlock everything', cheated: 'Everything unlocked. Cheater.', allDone: 'Already all unlocked.',
+    locked: '???', lockedHint: 'Dropped somewhere in the games',
+    presetsLabel: 'Picks:', presetLocked: n => '🔒 ' + n + ' to go',
+    maxMsg: n => 'Up to ' + n + ' sounds at once', pageOf: (a, b) => a + ' / ' + b,
+    save: 'Save', saveSub: 'for moving devices or lost data',
+    saveSummary: 'Show / load a save code',
+    saveNote: 'Progress is stored in this browser. Safari on iPhone may delete it if you do not visit for a while, so add this page to your Home Screen or keep a save code somewhere.',
+    exp: 'Show code', imp: 'Load this code', rst: 'Erase everything',
+    codePh: 'Save code goes here', copied: 'Copy it and keep it somewhere.', loaded: 'Loaded.',
+    rstConfirm: 'Really erase everything? (tap again)',
+    footer: '© 2026 Yusuke Iwasaki',
+  },
+  ja: {
+    eyebrow: 'Profile', career: 'Career',
+    il1: '以上、真面目な自己紹介でした。',
+    il2: 'お時間をいただき、誠にありがとうございました。',
+    il3: 'さて、',
+    il4: 'ご来訪のお礼に、<br>無駄の詰め合わせをどうぞ。',
+    soundNote: '※音がなります',
+    giftLabel: '無駄',
+    hintClosed: 'タップして受け取る（返品不可）', hintOpen: 'おめでとうございます。無駄の詰め合わせです。もう一度タップで閉じます。',
+    hintReclosed: '無駄の詰め合わせは丁寧に保管されています。',
+    giftAriaOpen: '無駄の詰め合わせを開ける', giftAriaClose: '詰め合わせを閉じる',
+    boxName: '無駄コーナー',
+    intent: '人は、無駄なことができるくらいの余裕があると幸せだと思うので、作っています。',
+    tagline: '遊ぶと音源がたまって、だんだんグルーヴになる。',
+    apps: 'ゲーム',
+    groove: 'グルーヴ機', sounds: '音源',
+    play: '▶ 鳴らす', stop: '■ 止める', loading: '…読み込み中', noSounds: 'まだ音源がない。アプリで遊べ（またはズルしろ）',
+    fxOn: '✨ 演出：ON', fxOff: '✨ 演出：OFF', fxTitle: 'ビートに合わせて控えめに光ります（明滅は毎秒2回まで）', kakutei: '★ FEVER ★',
+    cheat: '🔓 全部解放する', cheated: '全部解放しました。ズルです。', allDone: 'もう全部解放済みです。',
+    locked: '？？？', lockedHint: 'どこかのゲームに落ちている',
+    presetsLabel: 'おすすめ：', presetLocked: n => '🔒 あと' + n,
+    maxMsg: n => '同時に鳴らせるのは' + n + 'つまでです', pageOf: (a, b) => a + ' / ' + b,
+    save: 'セーブ', saveSub: '引っ越し・消えたとき用',
+    saveSummary: 'セーブコードを出す / 読み込む',
+    saveNote: '進捗はこのブラウザに保存されます。iPhoneのSafariはしばらく開かないと消えることがあるので、ホーム画面に追加するか、たまにコードを控えておくと安心です。',
+    exp: 'コードを出す', imp: 'このコードを読み込む', rst: '全部消す',
+    codePh: 'ここにセーブコード', copied: 'コピーしてどこかに貼っておいてください。', loaded: '読み込みました。',
+    rstConfirm: '本当に全部消す？（もう一度押す）',
+    footer: '© 2026 Yusuke Iwasaki',
+  },
+};
+const t = FZ.t;
+let L = FZ.apply(T);
+FZ.langToggle();
+
+(async function () {
+  const [p, apps, rules] = await Promise.all([
+    fetch('/data/profile.json?v=' + FZ.V).then(r => r.json()),
+    fetch('/data/apps.json?v=' + FZ.V).then(r => r.json()),
+    FZ.rules(),
+  ]);
+  const catalog = await FZ.catalog();
+  const PRESETS = catalog.presets || [];
+  const MAX_ON = catalog.maxOn || 5;   // 同時に鳴らせる音源の数
+
+  // ---------- 状態 ----------
+  // テンポごとに音源セットが分かれている（unlocks.json の bpm）。鳴らせるのは常に1セットだけ
+  const TEMPOS = [
+    { bpm: 120, color: '#ffe066' },
+    { bpm: 180, color: '#4cc9f0' },
+    { bpm: 400, color: '#ff4d6d' },
+    { bpm: 1280, color: '#f4a261' },
+  ];
+  const bpmOf = r => r.bpm || 120;
+  let tempo = FZ.stat('top', 'bpm') || 120;
+  if (!TEMPOS.some(x => x.bpm === tempo)) tempo = 120;
+  let unlocked = new Set(FZ.unlocked());
+  // 選んでいる音源はテンポごと。最初は「全部そろっている最初のおすすめ」、なければ持っている音源を上から上限まで
+  let sel = {};
+  function defaultSel(bpm) {
+    const full = PRESETS.find(p => p.bpm === bpm && p.sounds.every(id => unlocked.has(id)));
+    if (full) return new Set(full.sounds);
+    return new Set(rules.filter(r => bpmOf(r) === bpm && unlocked.has(r.id)).slice(0, MAX_ON).map(r => r.id));
+  }
+  const on = () => (sel[tempo] = sel[tempo] || defaultSel(tempo));
+  let appPage = 0;
+  let ctx = null, master = null, buffers = {}, gains = {}, sources = [];
+  let playing = false;
+  let gen = 0;                           // 再生の世代。読み込み中にテンポを変えたら古いほうは鳴らさない
+  let loading = false;                   // 音源を読み込み中（まだ鳴っていないが、鳴らすつもり）
+  // 箱：初回は閉じた状態。以降は前回の開閉状態を覚えておく（boxOpen: 1=開, 2=閉じた）
+  let boxState = FZ.stat('top', 'boxOpen');   // 0=未開封
+
+  const $ = id => document.getElementById(id);
+  const groove = $('groove'), lampsEl = $('lamps');
+  const LAMPS = 9;
+  for (let i = 0; i < LAMPS; i++) { const d = document.createElement('i'); d.style.setProperty('--i', i); lampsEl.appendChild(d); }
+  let fxWanted = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  try { const v = localStorage.getItem('fz-fx'); if (v === '0' || v === '1') fxWanted = v === '1'; } catch (e) {}
+  let fxRaf = 0, fxT0 = 0, fxPulse = 0.5, fxLast = -1;
+  const FEVER_ODDS = 1 / 128;   // 光るたびにこの確率で FEVER
+  const FEVER_PULSES = 8;       // FEVER は光る8回ぶん続く
+  let feverLeft = 0;
+  const giftEl = $('gift'), box = $('giftbox'), hint = $('gifthint');
+
+  // ---------- 描画（言語切り替え時も呼ぶ） ----------
+  function renderProfile() {
+    document.title = p.name;
+    $('pname').textContent = t(p.name);
+    $('prole').textContent = t(p.role);
+    $('psummary').textContent = t(p.summary);
+    const linksEl = $('plinks');
+    linksEl.textContent = '';
+    for (const l of p.links) {
+      if (!l.url || (l.only && l.only !== FZ.lang())) continue;
+      const a = document.createElement('a');
+      a.href = l.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = t(l.label);
+      linksEl.appendChild(a);
+    }
+    const careerEl = $('pcareer');
+    careerEl.textContent = '';
+    for (const c of p.career) {
+      const li = document.createElement('li');
+      li.innerHTML = '<div class="when"></div><div class="what"></div><div class="detail"></div>';
+      li.querySelector('.when').textContent = t(c.when);
+      li.querySelector('.what').textContent = t(c.what);
+      li.querySelector('.detail').textContent = t(c.detail) || '';
+      careerEl.appendChild(li);
+    }
+  }
+  const PER_PAGE = 6;
+  const pageCount = () => Math.ceil(apps.length / PER_PAGE);
+  function renderApps() {
+    const track = $('appstrack');
+    track.textContent = '';
+    for (let pg = 0; pg < pageCount(); pg++) {
+      const page = document.createElement('div');
+      page.className = 'app-page';
+      for (const a of apps.slice(pg * PER_PAGE, (pg + 1) * PER_PAGE)) {
+        const card = document.createElement('a');
+        card.className = 'app';
+        card.href = '/apps/' + a.id + '/';
+        card.style.setProperty('--c', a.color);
+        card.innerHTML = '<div class="emo"></div><div class="t"></div><div class="d"></div>';
+        card.querySelector('.emo').textContent = a.emoji;
+        card.querySelector('.t').textContent = t(a.title);
+        card.querySelector('.d').textContent = t(a.desc);
+        page.appendChild(card);
+      }
+      track.appendChild(page);
+    }
+    const dots = document.querySelector('.pager-dots');
+    dots.textContent = '';
+    for (let pg = 0; pg < pageCount(); pg++) {
+      const d = document.createElement('button');
+      d.setAttribute('aria-label', String(pg + 1));
+      d.onclick = () => goPage(pg);
+      dots.appendChild(d);
+    }
+    goPage(appPage);
+  }
+  function goPage(n) {
+    appPage = Math.max(0, Math.min(pageCount() - 1, n));
+    $('appstrack').style.transform = 'translateX(' + (-100 * appPage) + '%)';
+    document.querySelectorAll('.app-page').forEach((pg, i) => {
+      const hidden = i !== appPage;
+      pg.toggleAttribute('inert', hidden);          // 見えないページはタップもタブ移動もしない
+      pg.setAttribute('aria-hidden', String(hidden));
+    });
+    document.querySelectorAll('.pager-dots button').forEach((d, i) => d.setAttribute('aria-current', String(i === appPage)));
+    document.querySelector('.pager-count').textContent = L.pageOf(appPage + 1, pageCount());
+    document.querySelector('.pager-prev').disabled = appPage === 0;
+    document.querySelector('.pager-next').disabled = appPage === pageCount() - 1;
+  }
+  document.querySelector('.pager-prev').onclick = () => goPage(appPage - 1);
+  document.querySelector('.pager-next').onclick = () => goPage(appPage + 1);
+  // スワイプ：横に40px以上動かしたらめくる。めくったときはリンクを開かない
+  (function () {
+    const vp = document.querySelector('.apps-viewport');
+    let sx = null, sy = 0, swiped = false;
+    vp.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; swiped = false; });
+    window.addEventListener('pointerup', e => {
+      if (sx === null) return;
+      const dx = e.clientX - sx, dy = e.clientY - sy;
+      sx = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { swiped = true; goPage(appPage + (dx < 0 ? 1 : -1)); }
+    });
+    vp.addEventListener('click', e => { if (swiped) { e.preventDefault(); swiped = false; } }, true);
+  })();
+  function renderTempos() {
+    const el = $('tempos');
+    el.textContent = '';
+    el.setAttribute('aria-label', 'BPM');
+    for (const tp of TEMPOS) {
+      const set = rules.filter(r => bpmOf(r) === tp.bpm);
+      const got = set.filter(r => unlocked.has(r.id)).length;
+      const b = document.createElement('button');
+      b.className = 'tempo';
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', String(tp.bpm === tempo));
+      b.style.setProperty('--tc', tp.color);
+      b.innerHTML = '<b></b><span></span><em></em>';
+      b.querySelector('b').textContent = tp.bpm;
+      b.querySelector('span').textContent = 'BPM';
+      b.querySelector('em').textContent = got + '/' + set.length;
+      b.onclick = () => switchTempo(tp.bpm);
+      el.appendChild(b);
+    }
+  }
+  function setGain(id) {
+    if (gains[id]) gains[id].gain.setTargetAtTime(on().has(id) ? 1 : 0, ctx.currentTime, 0.02);
+  }
+  function renderPresets() {
+    const el = $('presets');
+    el.textContent = '';
+    const lbl = document.createElement('span');
+    lbl.className = 'lbl';
+    lbl.textContent = L.presetsLabel;
+    el.appendChild(lbl);
+    const cur = on();
+    for (const p of PRESETS.filter(x => x.bpm === tempo)) {
+      const missing = p.sounds.filter(id => !unlocked.has(id)).length;
+      const b = document.createElement('button');
+      b.className = 'preset';
+      b.innerHTML = '<span class="preset-name"></span>' + (missing ? '<span class="preset-sub"></span>' : '');   // 揃っているおすすめは名前だけ
+      b.querySelector('.preset-name').textContent = t(p.name);
+      if (missing) b.querySelector('.preset-sub').textContent = L.presetLocked(missing);
+      b.disabled = missing > 0;
+      b.setAttribute('aria-pressed', String(cur.size === p.sounds.length && p.sounds.every(id => cur.has(id))));
+      b.onclick = () => {
+        if (missing) return;
+        const before = on();
+        sel[tempo] = new Set(p.sounds);
+        for (const id of new Set([...before, ...p.sounds])) setGain(id);
+        $('groovemsg').textContent = '';
+        renderTracks();
+      };
+      el.appendChild(b);
+    }
+  }
+  function paintOnCount() { $('oncount').textContent = 'ON ' + on().size + '/' + MAX_ON; }
+  function renderTracks() {
+    $('count').textContent = unlocked.size + ' / ' + rules.length + ' ' + L.sounds;
+    renderTempos();
+    renderPresets();
+    paintOnCount();
+    const el = $('tracks');
+    el.textContent = '';
+    for (const r of rules) {
+      if (bpmOf(r) !== tempo) continue;
+      const b = document.createElement('button');
+      const has = unlocked.has(r.id);
+      b.className = 'trk' + (has ? (on().has(r.id) ? ' on' : '') : ' locked');
+      b.dataset.id = r.id;
+      b.innerHTML = '<div class="n"></div><div class="h"></div>';
+      b.querySelector('.n').textContent = has ? t(r.name) : L.locked;
+      b.querySelector('.h').textContent = has ? '' : L.lockedHint;
+      if (has) b.onclick = () => {
+        const cur = on();
+        if (!cur.has(r.id) && cur.size >= MAX_ON) {          // 上限：これ以上は足せない
+          $('groovemsg').textContent = L.maxMsg(MAX_ON);
+          const c = $('oncount'); c.classList.remove('full'); void c.offsetWidth; c.classList.add('full');
+          return;
+        }
+        cur.has(r.id) ? cur.delete(r.id) : cur.add(r.id);
+        b.classList.toggle('on', cur.has(r.id));
+        $('groovemsg').textContent = '';
+        setGain(r.id);
+        paintOnCount();
+        renderPresets();
+      };
+      el.appendChild(b);
+    }
+    $('play').textContent = playing ? L.stop : L.play;
+    $('cheat').textContent = L.cheat;
+    paintFxBtn();
+    $('kakutei').textContent = L.kakutei;
+  }
+  function renderBox() {
+    const isOpen = boxState === 1;
+    box.classList.toggle('open', isOpen);
+    giftEl.classList.toggle('shut', !isOpen);
+    giftEl.hidden = !isOpen;
+    box.setAttribute('aria-label', isOpen ? L.giftAriaClose : L.giftAriaOpen);
+    box.setAttribute('aria-expanded', String(isOpen));
+    hint.textContent = isOpen ? L.hintOpen : boxState === 2 ? L.hintReclosed : L.hintClosed;
+  }
+  function renderAll() {
+    $('code').placeholder = L.codePh;
+    renderProfile(); renderApps(); renderTracks(); renderBox();
+  }
+
+  L = T[FZ.lang()];                            // 読み込み中に言語が切り替えられていても合わせる
+  renderAll();
+  document.body.classList.remove('booting');   // ここで初めて見せる
+
+  // アプリから戻ってきた＆箱が開いている → 「無駄コーナー」の見出しから見せる
+  let fromApp = null;
+  try { fromApp = sessionStorage.getItem('fz-from-app'); sessionStorage.removeItem('fz-from-app'); } catch (e) {}
+  const fromIdx = apps.findIndex(a => a.id === fromApp);
+  if (fromIdx >= 0) goPage(Math.floor(fromIdx / PER_PAGE));
+  if (fromApp && boxState === 1) {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    const target = document.querySelector('h1.boxname');
+    target.scrollIntoView({ block: 'start' });
+    // Webフォントが後から読み込まれて上の高さが変わると位置がずれるので、読み込み後にもう一度合わせる（自分で動かしていなければ）
+    let touched = false;
+    const mark = () => { touched = true; };
+    ['wheel', 'touchstart', 'keydown'].forEach(ev => addEventListener(ev, mark, { once: true, passive: true }));
+    if (document.fonts) document.fonts.ready.then(() => { if (!touched) target.scrollIntoView({ block: 'start' }); });
+  }
+  FZ.onLang(() => { L = T[FZ.lang()]; renderAll(); });
+
+  // ---------- 箱の開け閉め ----------
+  box.onclick = () => {
+    if (boxState === 1) {
+      boxState = 2;
+      FZ.set('top', 'boxOpen', 2);
+      stop();
+      giftEl.classList.add('shut');
+      box.classList.remove('open');
+      setTimeout(renderBox, 350);       // フェードアウトしてから隠す
+    } else {
+      boxState = 1;
+      FZ.set('top', 'boxOpen', 1);
+      FZ.add('top', 'gifts', 1);
+      giftEl.hidden = false;
+      giftEl.classList.add('shut');
+      void giftEl.offsetHeight;          // 表示を確定させてからフェードイン
+      renderBox();
+      setTimeout(() => giftEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 450);
+    }
+  };
+
+  // ---------- グルーヴ機 ----------
+  $('play').onclick = () => { (playing || loading) ? stop() : start(); };
+
+  async function start() {
+    stop();                                 // 念のため：別テンポが鳴っていたら必ず止める
+    const my = ++gen;
+    loading = true;
+    const list = rules.filter(r => bpmOf(r) === tempo && unlocked.has(r.id));
+    if (!list.length) { loading = false; $('play').textContent = L.noSounds; return; }
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // 重ねても割れないよう、出口にリミッター代わりのコンプを1つ
+      master = ctx.createDynamicsCompressor();
+      master.threshold.value = -10; master.knee.value = 6; master.ratio.value = 12;
+      master.attack.value = 0.003; master.release.value = 0.15;
+      master.connect(ctx.destination);
+    }
+    await ctx.resume();
+    $('play').textContent = L.loading;
+    await Promise.all(list.map(async r => {
+      if (!buffers[r.id]) {
+        const ab = await fetch(r.file + '?v=' + FZ.V).then(x => x.arrayBuffer());
+        buffers[r.id] = await ctx.decodeAudioData(ab);
+      }
+    }));
+    if (my !== gen) return;                 // 読み込み中に止められた／テンポが変わった
+    loading = false;
+    const t0 = ctx.currentTime + 0.1;
+    fxStart(t0);
+    for (const r of list) {
+      const src = ctx.createBufferSource();
+      src.buffer = buffers[r.id];
+      src.loop = true;
+      const g = ctx.createGain();
+      g.gain.value = on().has(r.id) ? 1 : 0;
+      src.connect(g).connect(master);
+      src.start(t0);
+      gains[r.id] = g;
+      sources.push(src);
+    }
+    playing = true;
+    $('groove').classList.add('playing');
+    $('play').textContent = L.stop;
+  };
+  function stop() {
+    gen++;                                  // 読み込み中の start() も無効にする
+    loading = false;
+    sources.forEach(s => { try { s.stop(); } catch (e) {} });
+    sources = []; gains = {};
+    playing = false;
+    $('groove').classList.remove('playing');
+    fxStop();
+    $('play').textContent = L.play;
+  }
+  // テンポ切り替え：鳴っていたら止めて、新しいテンポで鳴らし直す（2つのテンポが同時に鳴ることはない）
+  function switchTempo(bpm) {
+    if (bpm === tempo) return;
+    const was = playing || loading;         // 読み込み中に切り替えても「鳴らすつもり」は引き継ぐ
+    stop();
+    tempo = bpm;
+    FZ.set('top', 'bpm', bpm);
+    renderTracks();
+    if (was) start();
+  }
+
+  // ---------- 再生中の演出（BPMに合わせて光る） ----------
+  function paintFxBtn() {
+    const b = $('fxbtn');
+    b.textContent = fxWanted ? L.fxOn : L.fxOff;
+    b.title = L.fxTitle;
+    b.setAttribute('aria-pressed', String(fxWanted));
+  }
+  $('fxbtn').onclick = () => {
+    fxWanted = !fxWanted;
+    try { localStorage.setItem('fz-fx', fxWanted ? '1' : '0'); } catch (e) {}
+    paintFxBtn();
+    if (playing && fxWanted) fxStart(fxT0); else fxStop();
+  };
+  // 光る間隔：1拍ずつ。ただし毎秒2回を超えるテンポは2拍・4拍…にまとめる
+  function pulseSeconds(bpm) {
+    let beats = 1;
+    while (bpm / 60 / beats > 2.05) beats *= 2;
+    return 60 / bpm * beats;
+  }
+  function fxStart(t0) {
+    fxT0 = t0;
+    const tp = TEMPOS.find(x => x.bpm === tempo);
+    groove.style.setProperty('--gc', tp ? tp.color : '#ffe066');
+    if (!fxWanted) return;
+    fxPulse = pulseSeconds(tempo);
+    fxLast = -1;
+    feverLeft = 0;
+    cancelAnimationFrame(fxRaf);
+    groove.classList.add('lit');
+    fxRaf = requestAnimationFrame(fxFrame);
+  }
+  function fxStop() {
+    cancelAnimationFrame(fxRaf);
+    fxRaf = 0;
+    groove.classList.remove('lit', 'fever');
+    groove.style.setProperty('--pulse', 0);
+    lampsEl.querySelectorAll('i').forEach(i => i.classList.remove('on'));
+  }
+  function fxFrame() {
+    // 実際に耳に届く時刻に合わせる（出力の遅れぶん引く）
+    const now = ctx.currentTime - (ctx.outputLatency || ctx.baseLatency || 0);
+    let p = 0;
+    if (now >= fxT0) {
+      const ph = (now - fxT0) / fxPulse, n = Math.floor(ph), f = ph - n;
+      p = f < 0.08 ? f / 0.08 : Math.pow(1 - (f - 0.08) / 0.92, 2);   // ふわっと立ち上がって、ゆっくり消える
+      if (n !== fxLast) {
+        fxLast = n;
+        lampsEl.querySelectorAll('i').forEach((el, i) => el.classList.toggle('on', i === n % LAMPS || i === (n + LAMPS - 1) % LAMPS));
+        if (feverLeft > 0) feverLeft--;
+        else if (Math.random() < FEVER_ODDS) feverLeft = FEVER_PULSES;
+        groove.classList.toggle('fever', feverLeft > 0);
+      }
+    }
+    groove.style.setProperty('--pulse', p.toFixed(3));
+    fxRaf = requestAnimationFrame(fxFrame);
+  }
+
+  // ---------- 全部解放（ズル） ----------
+  $('cheat').onclick = async () => {
+    if (unlocked.size === rules.length) { $('cheat').textContent = L.allDone; return; }
+    const was = playing || loading;
+    stop();
+    await FZ.unlockAll();
+    unlocked = new Set(FZ.unlocked());
+    sel = {};                               // 選び直し：各テンポのおすすめから
+    renderTracks();
+    $('cheat').textContent = L.cheated;
+    if (was) start();
+  };
+
+  // ---------- セーブコード ----------
+  const code = $('code'), msg = $('msg');
+  $('exp').onclick = () => { code.value = FZ.exportCode(); code.select(); msg.textContent = L.copied; };
+  $('imp').onclick = () => {
+    try { FZ.importCode(code.value); msg.textContent = L.loaded; setTimeout(() => location.reload(), 600); }
+    catch (e) { msg.textContent = e.message; }
+  };
+  // confirm() はアプリ内ブラウザなどで黙って false を返すことがあるので使わない。4秒以内にもう一度押したら消す
+  let rstTimer = null;
+  function disarmReset() { clearTimeout(rstTimer); rstTimer = null; $('rst').textContent = L.rst; $('rst').classList.remove('danger'); }
+  $('rst').onclick = () => {
+    if (!rstTimer) {
+      $('rst').textContent = L.rstConfirm;
+      $('rst').classList.add('danger');
+      rstTimer = setTimeout(disarmReset, 4000);
+      return;
+    }
+    disarmReset();
+    stop();
+    FZ.reset();
+    location.reload();
+  };
+})();
+</script>
+</body>
+</html>

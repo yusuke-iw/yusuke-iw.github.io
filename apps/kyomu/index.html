@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Void Timer | Yusuke Iwasaki</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/core/core.css?v=14">
+<style>
+  body { display: grid; place-items: center; text-align: center; transition: background 2s; user-select: none; }
+  body.void { background: #000; }
+  #time { font: clamp(64px, 18vw, 140px) 'DotGothic16', monospace; color: #6c63ff; }
+  #say { font-weight: 800; font-size: 18px; min-height: 3em; padding: 0 20px; }
+  #rec { color: var(--muted); font-size: 13px; margin-top: 10px; }
+  #start { margin-top: 24px; font: 800 22px 'M PLUS Rounded 1c', sans-serif; padding: 14px 34px;
+           background: #6c63ff; color: #fff; border: none; border-radius: 999px; cursor: pointer; }
+  body.void #start, body.void .fz-bar { display: none; }
+</style>
+</head>
+<body>
+<div class="fz-bar"><a href="/" data-i18n="back"></a><span id="right"><span data-i18n="title"></span></span></div>
+<div>
+  <div id="time">0.0</div>
+  <div id="say" data-i18n-html="intro"></div>
+  <button id="start" data-i18n="start"></button>
+  <div id="rec"></div>
+</div>
+<script src="/core/core.js?v=14"></script>
+<script>
+const APP = 'kyomu';
+const T = {
+  en: {
+    back: '← Back', title: 'Void Timer', start: 'Enter the void', again: 'Void again',
+    intro: 'Measures how long you do nothing.<br>Touch the mouse, keys or screen and it ends.',
+    lines: [[3, '…'], [8, 'You are doing nothing nicely'], [15, 'The void deepens'], [25, 'Something is about to… not happen'],
+            [30, 'You are, right now, doing nothing'], [45, 'Someone behind the screen is watching (no one is)'], [60, '1 minute. A respectable void'],
+            [120, '2 minutes. This is training now'], [300, '5 minutes. On the edge of enlightenment']],
+    rec: (b, t) => 'Best ' + b + 's / Total void ' + t + 's',
+    failed: (r, s) => 'Void failed.<br>' + r + ' (' + s + 's)',
+    moved: 'You moved.', touched: 'You touched it.', key: 'You pressed a key.', wheel: 'You scrolled.', away: 'You looked away.',
+  },
+  ja: {
+    back: '← 戻る', title: '虚無タイマー', start: '虚無を始める', again: 'もう一度虚無る',
+    intro: '何もしない時間を計ります。<br>マウスもキーも画面も触ったら終わり。',
+    lines: [[3, '…'], [8, 'いい感じに何もしていません'], [15, '虚無が深まってきました'], [25, 'あと少しで何かが…起きません'],
+            [30, 'あなたは今、何もしていない'], [45, '画面の向こうで誰かが見ています（いません）'], [60, '1分。立派な虚無です'],
+            [120, '2分。もはや修行'], [300, '5分。悟りの手前']],
+    rec: (b, t) => '最高 ' + b + ' 秒 ／ 累計虚無 ' + t + ' 秒',
+    failed: (r, s) => '虚無、失敗。<br>' + r + '（' + s + '秒）',
+    moved: '動きましたね', touched: '触りましたね', key: 'キーを押しましたね', wheel: 'スクロールしましたね', away: 'よそ見しましたね',
+  },
+};
+let L = FZ.apply(T);
+function setTitle() { document.title = L.title + ' | Yusuke Iwasaki'; }
+setTitle();
+FZ.langToggle(document.getElementById('right'));
+
+const timeEl = document.getElementById('time'), say = document.getElementById('say'), rec = document.getElementById('rec'), start = document.getElementById('start');
+let t0 = 0, raf = 0, armed = false, quickRun = 0;
+function showRec() { rec.textContent = L.rec(FZ.stat(APP, 'best'), FZ.stat(APP, 'total')); }
+showRec();
+
+start.onclick = e => {
+  e.stopPropagation();
+  document.body.classList.add('void');
+  say.textContent = '…';
+  t0 = performance.now();
+  // ボタンを押した直後の指の動きで即終了しないよう少し待ってから監視開始
+  setTimeout(() => { armed = true; }, 600);
+  tick();
+};
+function tick() {
+  const s = (performance.now() - t0) / 1000;
+  timeEl.textContent = s.toFixed(1);
+  for (const [sec, l] of L.lines) if (s >= sec) say.textContent = l;
+  raf = requestAnimationFrame(tick);
+}
+function fail(reason, kind) {
+  if (!armed) return;
+  armed = false;
+  cancelAnimationFrame(raf);
+  const s = Math.floor((performance.now() - t0) / 1000);
+  if (kind === 'key') FZ.add(APP, 'keyFails', 1);
+  if (kind === 'away') FZ.add(APP, 'away', 1);
+  quickRun = s < 1 ? quickRun + 1 : 0;                       // 1秒もたずに負けた回数（連続）
+  FZ.max(APP, 'quickStreak', quickRun);
+  FZ.max(APP, 'best', s);
+  FZ.add(APP, 'total', s);
+  document.body.classList.remove('void');
+  say.innerHTML = L.failed(reason, s);
+  start.textContent = L.again;
+  showRec();
+}
+addEventListener('pointermove', () => fail(L.moved));
+addEventListener('pointerdown', () => fail(L.touched));
+addEventListener('keydown', () => fail(L.key, 'key'));
+addEventListener('wheel', () => fail(L.wheel));
+document.addEventListener('visibilitychange', () => { if (document.hidden) fail(L.away, 'away'); });
+FZ.onLang(() => { L = T[FZ.lang()]; setTitle(); showRec(); if (!armed) start.textContent = L.start; });
+</script>
+</body>
+</html>

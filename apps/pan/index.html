@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Bun Alignment | Yusuke Iwasaki</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/core/core.css?v=14">
+<style>
+  body { display: grid; place-items: center; text-align: center; user-select: none; -webkit-user-select: none; overflow: hidden; }
+  #count { font: 34px 'DotGothic16', monospace; color: #e9c46a; }
+  #count small { font-size: 14px; color: var(--muted); margin-left: 4px; }
+  #belt { position: relative; width: min(92vw, 420px); height: 120px; margin: 10px auto 0; border-radius: 12px; overflow: hidden;
+          background: repeating-linear-gradient(90deg, #3a3450 0 18px, #2b2540 18px 36px); background-size: 36px 100%;
+          animation: belt 1.2s linear infinite; box-shadow: inset 0 6px 0 #4a4466, inset 0 -6px 0 #4a4466; }
+  @keyframes belt { to { background-position: 36px 0; } }
+  .bun { position: absolute; top: 50%; width: 64px; height: 50px; margin: -25px 0 0 -32px; border-radius: 24px 24px 14px 14px;
+         background: radial-gradient(circle at 50% 30%, #f4c27a, #c98a3d 70%); box-shadow: 0 4px 0 #8a5a2b; cursor: pointer;
+         display: grid; place-items: center; transition: transform .12s; }
+  .bun::before { content: ''; position: absolute; top: 6px; left: 12px; right: 12px; height: 7px; border-radius: 4px; background: #fff6e0; }
+  .bun span { font: 800 12px 'M PLUS Rounded 1c', sans-serif; color: #5a3410; margin-top: 10px; }
+  .guide { margin-top: 8px; color: var(--muted); font-size: 13px; }
+  .guide b { display: inline-block; width: 30px; height: 22px; border-radius: 10px 10px 6px 6px; background: #c98a3d; vertical-align: middle; position: relative; }
+  .guide b::before { content: ''; position: absolute; top: 3px; left: 6px; right: 6px; height: 4px; border-radius: 2px; background: #fff6e0; }
+  #say { font-weight: 800; font-size: 16px; min-height: 2.6em; padding: 0 20px; margin-top: 10px; }
+  #rec { color: var(--muted); font-family: 'DotGothic16', monospace; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="fz-bar"><a href="/" data-i18n="back"></a><span id="right"><span data-i18n="title"></span></span></div>
+<div>
+  <div id="count">0<small></small></div>
+  <div id="belt"></div>
+  <div class="guide"><span data-i18n="guide"></span> <b></b></div>
+  <div id="say" data-i18n="intro"></div>
+  <div id="rec"></div>
+</div>
+<script src="/core/core.js?v=14"></script>
+<script>
+const APP = 'pan';
+const TRAVEL = 4000, SPAWN = 1500;   // 端から端まで4秒、1.5秒ごとに1個
+const T = {
+  en: {
+    back: '← Back', title: 'Bun Alignment', unit: 'buns', bun: 'BUN', guide: 'Right way up:',
+    intro: 'Sweet buns keep coming down the line. Tap to turn them until they are the right way up. Do not ask why.',
+    lines: { 10: 'Ten. You are slowly becoming nothing.', 50: 'Fifty. Your hands move on their own now.', 100: 'A hundred. The buns do not thank you.',
+             300: 'Three hundred. You hear the conveyor in your sleep.', 1000: 'A thousand. You are part of the bun now.' },
+    rec: (a, s) => 'Aligned ' + a + ' / Best streak ' + s,
+  },
+  ja: {
+    back: '← 戻る', title: '菓子パンの向きそろえ', unit: '個', bun: 'パン', guide: '正しい向き：',
+    intro: '菓子パンがベルトに乗って流れてきます。タップで回して、向きをそろえてください。理由は聞かないでください。',
+    lines: { 10: '10個目。だんだん無になってきました。', 50: '50個目。手が勝手に動くようになりました。', 100: '100個目。パンは感謝してくれません。',
+             300: '300個目。夢の中でもベルトの音がします。', 1000: '1000個目。あなたはもうパンの一部です。' },
+    rec: (a, s) => 'そろえた ' + a + '個 / 最高連続 ' + s,
+  },
+};
+let L = FZ.apply(T);
+function setTitle() { document.title = L.title + ' | Yusuke Iwasaki'; }
+setTitle();
+FZ.langToggle(document.getElementById('right'));
+
+const $ = id => document.getElementById(id);
+const belt = $('belt'), say = $('say'), rec = $('rec');
+let buns = [], nextSpawn = 0, streak = 0, crookedRun = 0;
+const W = () => belt.clientWidth || 380;
+
+function show() {
+  rec.textContent = L.rec(FZ.stat(APP, 'aligned'), FZ.stat(APP, 'streak'));
+  $('count').innerHTML = FZ.stat(APP, 'aligned') + '<small>' + L.unit + '</small>';
+}
+function spawn(now) {
+  const el = document.createElement('div');
+  const rot = [0, 90, 180, 270][Math.floor(Math.random() * 4)];
+  // rot は向きの判定用（0〜270）。view は見た目の角度で、足していくだけ（270→0 で逆回りに戻らないように）
+  const b = { el, born: now, rot, view: rot, turns: 0 };
+  el.className = 'bun';
+  el.innerHTML = '<span></span>';
+  el.querySelector('span').textContent = L.bun;
+  el.addEventListener('click', () => turn(b));
+  belt.appendChild(el);
+  buns.push(b);
+  paint(b, now);
+}
+function paint(b, now) {
+  const p = (now - b.born) / TRAVEL;
+  b.el.style.left = (-40 + p * (W() + 80)) + 'px';
+  b.el.style.transform = 'rotate(' + b.view + 'deg)';
+  b.el.dataset.rot = b.rot;
+}
+function turn(b) {
+  if (b.rot === 0) FZ.add(APP, 'overSpin', 1);           // もうそろっていたのに回した
+  b.rot = (b.rot + 90) % 360;
+  b.view += 90;
+  if (++b.turns === 4) FZ.add(APP, 'fullSpin', 1);       // 1個を一周させた
+  b.el.style.transform = 'rotate(' + b.view + 'deg)';
+  b.el.dataset.rot = b.rot;
+  FZ.sfx('tap');
+}
+function ship(b) {
+  b.el.remove();
+  if (b.rot === 0) {
+    crookedRun = 0;
+    FZ.add(APP, 'aligned', 1);
+    FZ.max(APP, 'streak', ++streak);
+    FZ.sfx('pop');
+    const n = FZ.stat(APP, 'aligned');
+    if (L.lines[n]) say.textContent = L.lines[n];
+  } else {
+    streak = 0;
+    FZ.add(APP, 'crooked', 1);
+    FZ.max(APP, 'crookedStreak', ++crookedRun);           // 曲がったまま流した（連続）
+    FZ.sfx('clunk');
+  }
+  show();
+}
+setInterval(() => {
+  const now = performance.now();
+  if (now >= nextSpawn) { spawn(now); nextSpawn = now + SPAWN; }
+  for (const b of buns.slice()) {
+    if (now - b.born >= TRAVEL) { buns.splice(buns.indexOf(b), 1); ship(b); }
+    else paint(b, now);
+  }
+}, 50);
+
+spawn(performance.now());
+nextSpawn = performance.now() + SPAWN;
+show();
+FZ.onLang(() => { L = T[FZ.lang()]; setTitle(); show(); buns.forEach(b => { b.el.querySelector('span').textContent = L.bun; }); });
+</script>
+</body>
+</html>

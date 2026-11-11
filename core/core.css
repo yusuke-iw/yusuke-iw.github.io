@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+Rounded+1c:wght@400;800&display=swap');
+
+:root {
+  --bg: #12101a;
+  --fg: #fff6e0;
+  --muted: #a49fb8;
+  --accent: #ff4d6d;
+  --card: #1e1a2b;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'M PLUS Rounded 1c', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+a { color: inherit; }
+.pixel { font-family: 'DotGothic16', monospace; }
+
+/* アプリ共通ヘッダー */
+.fz-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; font-family: 'DotGothic16', monospace;
+  background: linear-gradient(var(--bg), transparent);
+}
+.fz-bar a { text-decoration: none; padding: 6px 10px; border: 2px solid var(--fg); border-radius: 8px; }
+/* ゲーム名は画面の真ん中に（戻るボタン・言語切り替えとは独立させる） */
+.fz-bar [data-i18n="title"] { position: absolute; left: 50%; transform: translateX(-50%); max-width: calc(100% - 220px);
+                              overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
+
+/* 言語切り替え */
+.fz-lang {
+  font: 14px 'DotGothic16', monospace; color: var(--muted); background: var(--bg);
+  border: 2px solid #3a3450; border-radius: 999px; padding: 6px 12px; cursor: pointer;
+}
+.fz-lang .on { color: #ffe066; }
+body > .fz-lang { position: fixed; top: 12px; right: 12px; z-index: 20; }
+.fz-bar .fz-lang { margin-left: 10px; }
+
+/* 音源ゲットの通知：画面の下に小さく出す。ゲームの邪魔をしない
+   （画面を暗くしない・タップは全部下のゲームに通す・3秒ほどで勝手に消える。明滅はさせない） */
+.fz-unlock, .fz-unlock * { pointer-events: none; }
+.fz-unlock {
+  position: fixed; left: 0; right: 0; bottom: 16px; z-index: 999; display: flex; justify-content: center;
+  padding: 0 12px; animation: fz-fade .25s ease-out;
+}
+.fz-unlock.fz-out { transition: opacity .3s; opacity: 0; }
+.fz-unlock-card {
+  position: relative; text-align: center; padding: 10px 18px 9px; border-radius: 14px; max-width: min(92vw, 380px);
+  background: #ffe066; color: #1b1030; border: 3px solid #1b1030; box-shadow: 5px 5px 0 #ff4d6d, 0 0 30px #ffe06666;
+  font-family: 'DotGothic16', monospace; transform: rotate(-2deg);
+  animation: fz-pop .45s cubic-bezier(.2, 1.8, .4, 1);
+}
+.fz-unlock-title { font-size: 12px; letter-spacing: .2em; }
+.fz-unlock-name { font-size: clamp(20px, 5.5vw, 26px); margin: 2px 0 3px; line-height: 1.2; }
+.fz-unlock-name::before { content: '♪ '; }
+.fz-goal .fz-unlock-name::before { content: '✓ '; }
+.fz-unlock-bpm { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 999px; background: #1b1030; color: #ffe066; }
+.fz-unlock-why { font: 12px 'M PLUS Rounded 1c', sans-serif; margin-top: 4px; }
+.fz-unlock-hint { font: 11px 'M PLUS Rounded 1c', sans-serif; margin-top: 3px; opacity: .7; }
+/* 紙吹雪は画面全体に降らせる（固定配置。タップは通す） */
+.fz-confetti { position: fixed; inset: 0; overflow: hidden; }
+.fz-confetti i {
+  position: absolute; top: -12px; left: var(--x); width: 8px; height: 13px; border-radius: 2px; opacity: 0;
+  animation: fz-fall var(--d) var(--delay) cubic-bezier(.25, .6, .5, 1) forwards;
+}
+@keyframes fz-fade { from { opacity: 0; } }
+@keyframes fz-pop { from { transform: rotate(-2deg) translateY(30px) scale(.6); } to { transform: rotate(-2deg) scale(1); } }
+@keyframes fz-fall {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  100% { opacity: .9; transform: translate(var(--dx), 105vh) rotate(var(--r)); }
+}
+
+/* アプリのページ：そのゲームで出る音源の到達点（ヘッダーの下に固定。スクロールさせない） */
+/* 到達点が増えても1行のまま。はみ出した分は帯の中だけ横にスクロールする */
+.fz-drops {
+  position: fixed; top: 52px; left: 0; right: 0; z-index: 9;
+  display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 5px; padding: 0 10px 4px;
+  scrollbar-width: thin; -webkit-overflow-scrolling: touch;
+  font: 12px/1.3 'M PLUS Rounded 1c', system-ui, sans-serif;
+}
+.fz-drops-head { font-family: 'DotGothic16', monospace; color: #ffe066; padding: 4px 4px; flex: none; }
+.fz-drop {
+  background: #1e1a2bdd; border: 1px solid #3a3450; border-radius: 999px; padding: 3px 10px;
+  color: var(--muted); white-space: nowrap; flex: none;
+}
+.fz-drop.got { color: #ffe066; border-color: #ffe06655; }
+body.void .fz-drops { display: none; }
+body.fz-has-drops { padding-top: var(--fz-top, 110px); }
+.fz-drop.fresh { color: #1b1030; background: #ffe066; border-color: #ffe066; animation: fz-fresh 1.2s ease-out 3; }
+@keyframes fz-fresh { 50% { box-shadow: 0 0 14px #ffe066; } }
+.fz-drops::before, .fz-drops::after { content: ''; margin: auto; }

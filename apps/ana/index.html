@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Dig and Fill | Yusuke Iwasaki</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/core/core.css?v=14">
+<style>
+  body { display: grid; place-items: center; text-align: center; user-select: none; -webkit-user-select: none; overflow: hidden; }
+  #ground { position: relative; width: min(84vw, 340px); height: 200px; margin: 0 auto; border-radius: 12px; overflow: hidden;
+            background: linear-gradient(#87ceeb 0 30%, #8b5a2b 30%); }
+  #hole { position: absolute; left: 50%; top: 30%; width: 90px; margin-left: -45px; height: 0; background: #2b1a0c;
+          border-radius: 0 0 40px 40px; transition: height .15s; }
+  #pile { position: absolute; left: calc(50% + 60px); bottom: 70%; width: 70px; height: 0; background: #8b5a2b;
+          border-radius: 40px 40px 0 0; transition: height .15s; }
+  #depth { font: 28px 'DotGothic16', monospace; color: #d4a373; margin-top: 8px; }
+  .tools { display: flex; gap: 12px; justify-content: center; margin-top: 10px; }
+  .tools button { font: 800 19px 'M PLUS Rounded 1c', sans-serif; padding: 12px 26px; border-radius: 999px; border: none; cursor: pointer;
+                  touch-action: manipulation; }
+  #dig { background: #d4a373; color: #12101a; }
+  #fill { background: #8b5a2b; color: #fff6e0; }
+  #say { font-weight: 800; font-size: 16px; min-height: 2.6em; padding: 0 20px; margin-top: 10px; }
+  #rec { color: var(--muted); font-family: 'DotGothic16', monospace; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="fz-bar"><a href="/" data-i18n="back"></a><span id="right"><span data-i18n="title"></span></span></div>
+<div>
+  <div id="ground"><div id="hole" data-depth="0"></div><div id="pile"></div></div>
+  <div id="depth">0%</div>
+  <div class="tools"><button id="dig" data-i18n="dig"></button><button id="fill" data-i18n="fill"></button></div>
+  <div id="say" data-i18n="intro"></div>
+  <div id="rec"></div>
+</div>
+<script src="/core/core.js?v=14"></script>
+<script>
+const APP = 'ana';
+const STEP = 10;   // 1回で10%ずつ
+const T = {
+  en: {
+    back: '← Back', title: 'Dig and Fill', dig: 'Dig', fill: 'Fill',
+    intro: 'Dig a hole all the way down. Then fill it back in. That is the job.',
+    bottom: 'You hit the bottom. Now fill it back in.', done: 'Back to how it was. Nothing has changed.',
+    half: 'You filled it back in halfway through.', flat: 'You "filled" flat ground. Nothing happened.', more: 'It does not go any deeper.',
+    rec: (h, d) => 'Holes dug and filled ' + h + ' / Shovelfuls ' + d,
+  },
+  ja: {
+    back: '← 戻る', title: '穴を掘って埋める', dig: '掘る', fill: '埋める',
+    intro: '穴をいちばん下まで掘ってください。そうしたら埋め戻してください。それが仕事です。',
+    bottom: '底まで掘りました。では、埋め戻してください。', done: '元通りになりました。何も変わっていません。',
+    half: '途中で埋め戻しました。', flat: '平らな地面を埋めました。何も起きません。', more: 'これ以上は掘れません。',
+    rec: (h, d) => '掘って埋めた穴 ' + h + ' / 掘った回数 ' + d,
+  },
+};
+let L = FZ.apply(T);
+function setTitle() { document.title = L.title + ' | Yusuke Iwasaki'; }
+setTitle();
+FZ.langToggle(document.getElementById('right'));
+
+const $ = id => document.getElementById(id);
+const say = $('say');
+let depth = 0, reachedBottom = false;
+
+function paint() {
+  $('hole').dataset.depth = depth;
+  $('hole').style.height = (depth * 0.65) + '%';
+  $('pile').style.height = (depth * 0.5) + 'px';
+  $('depth').textContent = depth + '%';
+}
+function show() { $('rec').textContent = L.rec(FZ.stat(APP, 'holes'), FZ.stat(APP, 'digs')); }
+$('dig').addEventListener('click', () => {
+  if (depth >= 100) { say.textContent = L.more; return; }
+  depth += STEP;
+  FZ.add(APP, 'digs', 1);
+  FZ.sfx('thud');
+  if (depth === 100) { reachedBottom = true; say.textContent = L.bottom; }
+  paint(); show();
+});
+$('fill').addEventListener('click', () => {
+  if (depth === 0) {                       // 平らな地面を埋める
+    FZ.add(APP, 'flatTaps', 1);
+    FZ.sfx('fizzle');
+    say.textContent = L.flat;
+    return;
+  }
+  depth -= STEP;
+  FZ.sfx('rustle');
+  if (depth === 0) {
+    if (reachedBottom) { FZ.add(APP, 'holes', 1); FZ.sfx('chime'); say.textContent = L.done; }
+    else { FZ.add(APP, 'halfway', 1); say.textContent = L.half; }
+    reachedBottom = false;
+  }
+  paint(); show();
+});
+paint();
+show();
+FZ.onLang(() => { L = T[FZ.lang()]; setTitle(); show(); });
+</script>
+</body>
+</html>

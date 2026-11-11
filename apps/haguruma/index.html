@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>The Mysterious Wheel | Yusuke Iwasaki</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/core/core.css?v=14">
+<style>
+  body { display: grid; place-items: center; text-align: center; user-select: none; -webkit-user-select: none; overflow: hidden; }
+  #wheel { width: min(50vw, 190px); height: min(50vw, 190px); margin: 0 auto; transition: transform .25s ease-out; }
+  #turns { font: 30px 'DotGothic16', monospace; color: #c9a227; margin-top: 6px; }
+  #made { color: var(--muted); font-size: 13px; }
+  .feet { display: flex; gap: 12px; justify-content: center; margin-top: 12px; }
+  .feet button { font: 800 18px 'M PLUS Rounded 1c', sans-serif; padding: 12px 22px; border-radius: 999px; border: none; cursor: pointer;
+                 background: #8d6e3f; color: #fff6e0; touch-action: manipulation; }
+  #why { margin-top: 10px; font: 13px 'M PLUS Rounded 1c', sans-serif; padding: 6px 14px; border-radius: 999px; cursor: pointer;
+         background: none; color: var(--muted); border: 1px solid #3a3450; }
+  #say { font-weight: 800; font-size: 16px; min-height: 2.6em; padding: 0 20px; margin-top: 10px; }
+  #rec { color: var(--muted); font-family: 'DotGothic16', monospace; font-size: 14px; }
+  @media (max-height: 640px) {   /* 小さい画面では歯車を少し小さく */
+    #wheel { width: 140px; height: 140px; }
+    #turns { font-size: 24px; margin-top: 2px; }
+    .feet { margin-top: 8px; }
+    #say { font-size: 14px; margin-top: 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="fz-bar"><a href="/" data-i18n="back"></a><span id="right"><span data-i18n="title"></span></span></div>
+<div>
+  <svg id="wheel" viewBox="-100 -100 200 200" aria-hidden="true">
+    <g fill="#8d6e3f" stroke="#5c4424" stroke-width="4">
+      <circle r="62"/>
+      <g id="teeth"></g>
+      <circle r="20" fill="#5c4424"/>
+    </g>
+    <g stroke="#5c4424" stroke-width="8"><line x1="0" y1="-58" x2="0" y2="58"/><line x1="-58" y1="0" x2="58" y2="0"/></g>
+  </svg>
+  <div id="turns">0</div>
+  <div id="made" data-i18n="made"></div>
+  <div class="feet"><button id="lfoot" data-i18n="left"></button><button id="rfoot" data-i18n="right"></button></div>
+  <button id="why" data-i18n="why"></button>
+  <div id="say" data-i18n="intro"></div>
+  <div id="rec"></div>
+</div>
+<script src="/core/core.js?v=14"></script>
+<script>
+const APP = 'haguruma';
+const PER_TURN = 12;   // 12歩で一周
+const T = {
+  en: {
+    back: '← Back', title: 'The Mysterious Wheel', left: '← Left foot', right: 'Right foot →', why: 'What is it for?',
+    made: 'Things produced: none',
+    intro: 'Step left, right, left, right to turn the great wheel (← → or A / D work too). It is connected to nothing.',
+    turned: n => 'Turn ' + n + '. Nothing happened. As always.',
+    stumble: 'Same foot twice. You stumbled.',
+    answers: ['Nobody knows.', 'Nobody knows. Keep turning.', 'It has always been this way. Nobody knows why.'],
+    rec: (t, s) => 'Turns ' + t + ' / Longest run of steps ' + s,
+  },
+  ja: {
+    back: '← 戻る', title: '謎の歯車', left: '← 左足', right: '右足 →', why: '何のため？',
+    made: '生み出したもの：なし',
+    intro: '左・右・左・右と交互に踏んで、大きな歯車を回してください（←→ か A・D キーでも）。どこにもつながっていません。',
+    turned: n => n + '周目。何も起きませんでした。いつも通りです。',
+    stumble: '同じ足で踏みました。つまずきました。',
+    answers: ['誰も知りません。', '知りません。回してください。', '昔からそういうことになっています。理由は誰も知りません。'],
+    rec: (t, s) => '回した ' + t + '周 / 止まらずに最高 ' + s + '歩',
+  },
+};
+let L = FZ.apply(T);
+function setTitle() { document.title = L.title + ' | Yusuke Iwasaki'; }
+setTitle();
+FZ.langToggle(document.getElementById('right'));
+
+const $ = id => document.getElementById(id);
+// 歯車の歯
+for (let i = 0; i < 12; i++) {
+  const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  r.setAttribute('x', -9); r.setAttribute('y', -84); r.setAttribute('width', 18); r.setAttribute('height', 26);
+  r.setAttribute('transform', 'rotate(' + i * 30 + ')');
+  $('teeth').appendChild(r);
+}
+let lastFoot = null, angle = 0, good = 0, run = 0, stumbleRun = 0;
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+function show() {
+  $('turns').textContent = FZ.stat(APP, 'turns');
+  $('rec').textContent = L.rec(FZ.stat(APP, 'turns'), FZ.stat(APP, 'nonstop'));
+}
+function step(foot) {
+  if (foot === lastFoot) {
+    run = 0;
+    FZ.max(APP, 'stumbleStreak', ++stumbleRun);
+    FZ.sfx('ng');
+    $('say').textContent = L.stumble;
+    return;
+  }
+  lastFoot = foot;
+  stumbleRun = 0;
+  FZ.max(APP, 'nonstop', ++run);
+  angle += 360 / PER_TURN;
+  $('wheel').style.transform = 'rotate(' + angle + 'deg)';
+  if (++good % PER_TURN === 0) {
+    FZ.add(APP, 'turns', 1);
+    FZ.sfx('clunk');
+    $('say').textContent = L.turned(FZ.stat(APP, 'turns'));
+  } else {
+    FZ.sfx('tap');
+  }
+  show();
+}
+$('lfoot').addEventListener('click', () => step('L'));
+$('rfoot').addEventListener('click', () => step('R'));
+document.addEventListener('keydown', e => {
+  if (e.repeat) return;
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { e.preventDefault(); step('L'); }
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { e.preventDefault(); step('R'); }
+});
+$('why').addEventListener('click', () => {
+  FZ.add(APP, 'askWhy', 1);
+  FZ.sfx('fizzle');
+  $('say').textContent = pick(L.answers);
+});
+show();
+FZ.onLang(() => { L = T[FZ.lang()]; setTitle(); show(); });
+</script>
+</body>
+</html>
